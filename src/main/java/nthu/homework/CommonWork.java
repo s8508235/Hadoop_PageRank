@@ -33,10 +33,10 @@ public class CommonWork {
                         ) throws IOException, InterruptedException {
             Configuration conf = context.getConfiguration();
             String[] key_value = value.toString().split("/");
-
+            /*
             for( String kv: key_value){
                 LOG.info("val :" + kv);
-            }
+            }*/
             //because result will be polluted
             String[] zakey = key_value[0].split("\\s+");
             key_value[0] = zakey[1];
@@ -47,18 +47,18 @@ public class CommonWork {
                 //not value
                 if(cnt != key_value.length-1){
                     String[] setStr = valStr.split(",");
-                    LOG.info("check idx:"+setStr[0] + " value: "+ setStr[1]);
+                    // LOG.info("check idx:"+setStr[0] + " value: "+ setStr[1]);
                 }else{
                     String idxStr = "r"+zakey[0];
                     conf.setDouble(idxStr,Double.parseDouble(valStr));
-                    LOG.info("set " + idxStr+": " + valStr);
+                    // LOG.info("set " + idxStr+": " + valStr);
                 }
                 
                 valCombiner.append(valStr).append("/");
                 cnt++;
             }
             String resStr =valCombiner.substring(0,valCombiner.length()-1);
-            LOG.info("key : "+ zakey[0] + " value : "+ resStr);
+            // LOG.info("key : "+ zakey[0] + " value : "+ resStr);
             context.write(new Text(zakey[0]),new Text(resStr));
         }
     }
@@ -84,7 +84,7 @@ public class CommonWork {
                             String needIdx = keyV[0].substring(1);
                             String getIdx = "r"+needIdx;
                             double getOtherR = conf.getDouble(getIdx,1.0);
-                            LOG.info("gets "+getIdx+": "+ String.valueOf(getOtherR)+" num:"+ keyV[1]);
+                            // LOG.info("gets "+getIdx+": "+ String.valueOf(getOtherR)+" num:"+ keyV[1]);
                             int dNum = Integer.valueOf(keyV[1]);
                             ans += getOtherR * Beta / dNum;
                         }
@@ -98,7 +98,7 @@ public class CommonWork {
                         result.append(setting).append("/");
                     }
                     String resStr =result.substring(0,result.length()-1);
-                    LOG.info("key : "+ key.toString() + "value : "+ resStr);
+                    // LOG.info("key : "+ key.toString() + " value : "+ resStr);
                     context.write(key,new Text(resStr));
                 }
 
@@ -108,11 +108,6 @@ public class CommonWork {
 
     public static class CommonResultReducer
             extends Reducer<Text,Text,Text,Text> {
-                /*
-                input: cnt|(nodes)
-                form 1st result without normalize
-                */
-        private static final double reciprocal = 1/N;//stands for inital value of r and mean of 1
         public void reduce(Text key, Iterable<Text> values,Context context
                             ) throws IOException, InterruptedException {
         		for(Text val : values){
@@ -122,25 +117,25 @@ public class CommonWork {
         }
     }
 //input : ntemp
-//output: standard output
-    public static void run(String output) throws Exception {
+//output: temp
+    public static void run(String input,String output) throws Exception {
         Configuration conf = new Configuration();
-        Job initalJob = new Job(conf, "init");
-        initalJob.setJarByClass(PageRank.class);
-        initalJob.setMapperClass(CommonInputMapper.class);
-        initalJob.setCombinerClass(CommonInputCombiner.class);
-        initalJob.setReducerClass(CommonResultReducer.class);
-        initalJob.setOutputKeyClass(Text.class);
-        initalJob.setOutputValueClass(Text.class);
-        FileInputFormat.addInputPath(initalJob, new Path("/user/root/data/ntemp"));
-        FileOutputFormat.setOutputPath(initalJob, new Path(output));
-        initalJob.waitForCompletion(true);
-        
-        Path tempFile = new Path("/user/root/data/ntemp");
+        Job job = new Job(conf, "common work");
+        job.setJarByClass(CommonWork.class);
+        job.setMapperClass(CommonInputMapper.class);
+        job.setCombinerClass(CommonInputCombiner.class);
+        job.setReducerClass(CommonResultReducer.class);
+        job.setOutputKeyClass(Text.class);
+        job.setOutputValueClass(Text.class);
+        FileInputFormat.addInputPath(job, new Path(input));
+        FileOutputFormat.setOutputPath(job, new Path(output));
+        job.waitForCompletion(true);
+        /*
+        Path tempFile = new Path(input);
         FileSystem hdfs = FileSystem.get(conf);
         if (hdfs.exists(tempFile)) {
             hdfs.delete(tempFile, true);
-        }
+        }*/
         return ;
 
     }

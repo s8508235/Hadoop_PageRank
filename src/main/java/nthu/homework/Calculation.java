@@ -35,24 +35,24 @@ public class Calculation {
 
         String[] key_value = value.toString().split("/");
         int strLen = key_value.length;
-
+        /*
         for( String kv: key_value){
             LOG.info("val :" + kv);
-        }
+        }*/
         //because result will be polluted
         String[] zakey = key_value[0].split("\\s+");
         key_value[0] = zakey[1];
         double unnormalizeResult = Double.parseDouble(key_value[strLen-1]);
-        LOG.info("get unnormalize ["+zakey+ "] result:" + unnormalizeResult); 
+        // LOG.info("get unnormalize ["+zakey+ "] result:" + unnormalizeResult); 
         iterSum -=unnormalizeResult;
-        LOG.info("1-S result:" + iterSum);
+        // LOG.info("1-S result:" + iterSum);
         conf.setDouble("rnew",iterSum);
         StringBuffer valCombiner = new StringBuffer();
         for(String valStr : key_value){
             valCombiner.append(valStr).append("/");
         }
         String resStr =valCombiner.substring(0,valCombiner.length()-1);
-        LOG.info("key : "+ zakey[0] + "value : "+ resStr);
+        // LOG.info("key : "+ zakey[0] + "value : "+ resStr);
         context.write(new Text(zakey[0]),new Text(resStr));
     }
 }
@@ -63,14 +63,14 @@ public class Calculation {
                         ) throws IOException, InterruptedException {
             Configuration conf = context.getConfiguration();
             double iterSum = conf.getDouble("rnew",1.0);
-            LOG.info("iteSum :"+ iterSum);
+            // LOG.info("iteSum :"+ iterSum);
             for( Text value : values){
                 String[] key_value = value.toString().split("/");
                 int strLen = key_value.length;
                 double unnormalizeResult = Double.parseDouble(key_value[strLen-1]);
-                LOG.info("get unnormalize ["+key.toString()+ "] result:" + unnormalizeResult);
+                // LOG.info("get unnormalize ["+key.toString()+ "] result:" + unnormalizeResult);
                 double normalizedResult = unnormalizeResult + iterSum/N;
-                LOG.info("normalized result:" + normalizedResult);
+                // LOG.info("normalized result:" + normalizedResult);
 
                 key_value[strLen-1] = String.valueOf(normalizedResult);
                 StringBuffer resultCombiner =new StringBuffer();
@@ -78,7 +78,7 @@ public class Calculation {
                     resultCombiner.append(k).append("/");
                 }
                 String resStr =resultCombiner.substring(0,resultCombiner.length()-1);
-                LOG.info("result:" + resStr);
+                // LOG.info("result:" + resStr);
                 context.write(key,new Text(resStr));     
             }
 
@@ -92,7 +92,7 @@ public class Calculation {
                             Context context
                             ) throws IOException, InterruptedException {
             for(Text val : values){
-                LOG.info("writing :"+val.toString());
+                // LOG.info("writing :"+val.toString());
                 context.write(key,val);
             }
 
@@ -101,11 +101,10 @@ public class Calculation {
 
 //input : temp
 //output: ntemp    
-    public static void run(String output) throws Exception {
+    public static void run(String input,String output) throws Exception {
         Configuration conf = new Configuration();
         Job job = new Job(conf, "normalize");
-        Path inPath = new Path("/user/root/data/temp");
-        Path outPath = new Path(output);
+
         job.setJarByClass(Calculation.class);
         job.setMapperClass(UnnormalizeMapper.class);
         job.setCombinerClass(NormalizeCombiner.class);
@@ -113,15 +112,15 @@ public class Calculation {
         job.setOutputKeyClass(Text.class);
         job.setOutputValueClass(Text.class);
 
-        FileInputFormat.addInputPath(job, inPath);
-        FileOutputFormat.setOutputPath(job, outPath);
+        FileInputFormat.addInputPath(job, new Path(input));
+        FileOutputFormat.setOutputPath(job, new Path(output));
         job.waitForCompletion(true);
-
-        Path tempFile = new Path("/user/root/data/temp");
+        /*
+        Path tempFile = new Path(input);
         FileSystem hdfs = FileSystem.get(conf);
         if (hdfs.exists(tempFile)) {
             hdfs.delete(tempFile, true);
-        }
+        }*/
         return ;
     }
 

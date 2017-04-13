@@ -99,7 +99,7 @@ public class PageRank {
         }
     }
 //input : standard input
-//output: temp
+//output: ntemp
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
         String[] otherArgs = new GenericOptionsParser(conf, args).getRemainingArgs();
@@ -115,13 +115,22 @@ public class PageRank {
         initalJob.setOutputKeyClass(Text.class);
         initalJob.setOutputValueClass(Text.class);
         FileInputFormat.addInputPath(initalJob, new Path(otherArgs[0]));
-        FileOutputFormat.setOutputPath(initalJob, new Path(/*otherArgs[1]*/"/user/root/data/temp"));
+        FileOutputFormat.setOutputPath(initalJob, new Path(/*otherArgs[1]*/"/user/root/data/temp0"));
         initalJob.waitForCompletion(true);
+        int i;
+        final int iterTimes = 0;
+        for(i = 0 ; i < iterTimes ;i ++){
+            String calInputString = "/user/root/data/temp"+i;
+            String calOutputString = "/user/root/data/ntemp"+i;
+            String commonOutputString ="/user/root/data/temp"+(i+1);
+            Calculation.run(calInputString,calOutputString);
 
-        Calculation.run("/user/root/data/ntemp");
-
-        CommonWork.run(otherArgs[1]);
-
+            CommonWork.run(calOutputString,commonOutputString);
+        }
+        String endCalInput="/user/root/data/temp"+i;
+        String endCalOutput="/user/root/data/ntemp"+i;
+        Calculation.run(endCalInput,endCalOutput);
+        MyOutputFormat.run(endCalOutput,otherArgs[1]);
         System.exit(0);
 
     }
