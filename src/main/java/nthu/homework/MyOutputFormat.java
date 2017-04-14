@@ -28,12 +28,7 @@ public class MyOutputFormat {
             //because result will be polluted
             String[] zakey = key_value[0].split("\\s+");//zakey[0] is key
             // set rj dj key_value: key value
-            double ans = Double.parseDouble(key_value[key_value.length-1]);
-            DecimalFormat df = new DecimalFormat("#.###");
-            ans = Double.valueOf(df.format(ans));
-            String end = String.format("%.3f",(ans));
-            // LOG.info("key : "+ zakey[0] + " value : "+ resStr);
-            context.write(new Text(zakey[0]),new Text(end));
+            context.write(new Text(zakey[0]),new Text(String.format("%.12f",Double.parseDouble(key_value[key_value.length-1]))));
         }
     }
 

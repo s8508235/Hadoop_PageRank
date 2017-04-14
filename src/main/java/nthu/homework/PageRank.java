@@ -20,7 +20,7 @@ import org.apache.commons.logging.LogFactory;
 public class PageRank {
     private static final Log LOG = LogFactory.getLog(PageRank.class);
 	private static final double Beta = 0.8;
-    private static final int N= 5;
+    private static final int N= 10876;
     public static class InputMapper
         extends Mapper<Object, Text, Text, Text>{
             /*
@@ -37,7 +37,7 @@ public class PageRank {
                 //initialize vector
                 // StringBuffer toStr = new StringBuffer("to,").append(v);
                 StringBuffer inStr = new StringBuffer().append(k);
-                // context.write(new Text(Integer.toString(k)),new Text(toStr.toString()));
+                //context.write(new Text(Integer.toString(k)),new Text(toStr.toString()));
                 context.write(new Text(Integer.toString(v)),new Text(inStr.toString()));
                 Configuration conf = context.getConfiguration();
                 String num_title = "d"+key_value[0];
@@ -71,7 +71,7 @@ public class PageRank {
                 }
                 // LOG.info("1st without normalize before calc:"+ans);
                 double reciprocal = (double) 1/N;
-                ans = ans * Beta * reciprocal + (double)(1-Beta) * reciprocal;
+                ans = ans * Beta * reciprocal + (1-Beta) * reciprocal;
                 // LOG.info("1st without normalize after calc: "+ans);
                 result.append(ans);
                 context.write(key,new Text(result.toString()));
@@ -91,8 +91,7 @@ public class PageRank {
                             ) throws IOException, InterruptedException {
         		for(Text val : values){
                     // String[]resultStr = val.toString().split(",");
-                    // LOG.info(" key : " + key.toString());
-                    // LOG.info(" result : " + val.toString());
+                    // LOG.info(" key : " + key.toString()+" result : " + val.toString());
                     context.write(key, val);
         		}
 
@@ -118,8 +117,8 @@ public class PageRank {
         FileOutputFormat.setOutputPath(initalJob, new Path(/*otherArgs[1]*/"/user/root/data/temp0"));
         initalJob.waitForCompletion(true);
         int i;
-        final int iterTimes = 0;
-        for(i = 0 ; i < iterTimes ;i ++){
+        final int iterTimes = 20;
+        for(i = 1 ; i < iterTimes ;i ++){
             String calInputString = "/user/root/data/temp"+i;
             String calOutputString = "/user/root/data/ntemp"+i;
             String commonOutputString ="/user/root/data/temp"+(i+1);

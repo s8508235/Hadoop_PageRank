@@ -1,4 +1,4 @@
-#mvn clean package
+mvn clean package
 hadoop fs -rm -f -r /user/root/output/out4
 
 hadoop fs -rm -f -r /user/root/data/temp{0..20}

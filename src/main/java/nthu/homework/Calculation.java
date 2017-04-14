@@ -20,7 +20,7 @@ import org.apache.commons.logging.LogFactory;
 public class Calculation {
 
     private static final Log LOG = LogFactory.getLog(Calculation.class);
-    private static final int N= 5;
+    private static final int N= 10876;
     private static final double Beta = 0.8;
 
     public static class UnnormalizeMapper
@@ -31,7 +31,7 @@ public class Calculation {
                     ) throws IOException, InterruptedException {
 
         Configuration conf = context.getConfiguration();
-        double iterSum = conf.getDouble("rnew",1.0);
+        double iterSum = conf.getDouble("rnew",0.0);
 
         String[] key_value = value.toString().split("/");
         int strLen = key_value.length;
@@ -43,16 +43,16 @@ public class Calculation {
         String[] zakey = key_value[0].split("\\s+");
         key_value[0] = zakey[1];
         double unnormalizeResult = Double.parseDouble(key_value[strLen-1]);
-        // LOG.info("get unnormalize ["+zakey+ "] result:" + unnormalizeResult); 
-        iterSum -=unnormalizeResult;
-        // LOG.info("1-S result:" + iterSum);
+        // LOG.info("get unnormalize ["+zakey[0]+ "] result:" + unnormalizeResult); 
+        iterSum +=unnormalizeResult;
+        // LOG.info("result:" + iterSum);
         conf.setDouble("rnew",iterSum);
         StringBuffer valCombiner = new StringBuffer();
         for(String valStr : key_value){
             valCombiner.append(valStr).append("/");
         }
         String resStr =valCombiner.substring(0,valCombiner.length()-1);
-        // LOG.info("key : "+ zakey[0] + "value : "+ resStr);
+        // LOG.info("key : "+ zakey[0] + " value : "+ resStr);
         context.write(new Text(zakey[0]),new Text(resStr));
     }
 }
@@ -69,7 +69,7 @@ public class Calculation {
                 int strLen = key_value.length;
                 double unnormalizeResult = Double.parseDouble(key_value[strLen-1]);
                 // LOG.info("get unnormalize ["+key.toString()+ "] result:" + unnormalizeResult);
-                double normalizedResult = unnormalizeResult + iterSum/N;
+                double normalizedResult = unnormalizeResult + (1-iterSum)/N;
                 // LOG.info("normalized result:" + normalizedResult);
 
                 key_value[strLen-1] = String.valueOf(normalizedResult);
@@ -92,7 +92,7 @@ public class Calculation {
                             Context context
                             ) throws IOException, InterruptedException {
             for(Text val : values){
-                // LOG.info("writing :"+val.toString());
+                // LOG.info(key.toString() +" : "+val.toString());
                 context.write(key,val);
             }
 

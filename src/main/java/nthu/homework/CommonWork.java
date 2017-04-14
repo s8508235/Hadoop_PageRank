@@ -18,9 +18,9 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 public class CommonWork {
-    private static final Log LOG = LogFactory.getLog(PageRank.class);
+    private static final Log LOG = LogFactory.getLog(CommonWork.class);
 	private static final double Beta = 0.8;
-    private static final int N= 5;
+    private static final int N= 10876;
     public static class CommonInputMapper
         extends Mapper<Object, Text, Text, Text>{
             /*
@@ -83,7 +83,7 @@ public class CommonWork {
                             String[] keyV = computeStr.split(",");
                             String needIdx = keyV[0].substring(1);
                             String getIdx = "r"+needIdx;
-                            double getOtherR = conf.getDouble(getIdx,1.0);
+                            double getOtherR = conf.getDouble(getIdx,0.0);
                             // LOG.info("gets "+getIdx+": "+ String.valueOf(getOtherR)+" num:"+ keyV[1]);
                             int dNum = Integer.valueOf(keyV[1]);
                             ans += getOtherR * Beta / dNum;
@@ -111,6 +111,7 @@ public class CommonWork {
         public void reduce(Text key, Iterable<Text> values,Context context
                             ) throws IOException, InterruptedException {
         		for(Text val : values){
+                    // LOG.info("res key : "+ key.toString() + " value : "+ val.toString());
                     context.write(key, val);
         		}
 
